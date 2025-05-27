@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebApp Loader</title>
+
+    <!-- === PWA Meta Tags for iOS === -->
+    <!-- Makes the web app run in full-screen mode -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Sets the style of the status bar (default, black, or black-translucent) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- The name of the app displayed beneath its icon on the Home Screen -->
+    <meta name="apple-mobile-web-app-title" content="My WebApp">
+    <!-- Viewport settings for responsiveness and to handle iPhone X-series notches/islands -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
+    <!-- Optional: Link to an icon for the Home Screen. Create a 180x180px PNG image named 'icon.png'
+         and place it in the same directory as this HTML file, or provide a full URL.
+    <link rel="apple-touch-icon" href="icon.png">
+    -->
+
+    <style>
+        /* === CSS Styles === */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Prevents scrollbars on the body itself */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f0f0; /* Default background for setup page */
+            color: #333;
+        }
+
+        /* Apply safe area padding to the body for edge-to-edge displays */
+        body {
+            padding-top: constant(safe-area-inset-top);
+            padding-left: constant(safe-area-inset-left);
+            padding-right: constant(safe-area-inset-right);
+            padding-bottom: constant(safe-area-inset-bottom);
+
+            padding-top: env(safe-area-inset-top);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Safari View (Configuration Page) */
+        #safari-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%; /* Full viewport height within safe areas */
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        #safari-view h1 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #111;
+        }
+
+        #safari-view p {
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            max-width: 90%;
+            color: #555;
+        }
+
+        #safari-view input[type="url"] {
+            width: 90%;
+            max-width: 400px;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        #safari-view button {
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+            background-color: #007aff; /* Standard iOS blue */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        #safari-view button:hover, #safari-view button:active {
+            background-color: #005ecb;
+        }
+
+        #status-message {
+            margin-top: 15px;
+            min-height: 20px; /* Placeholder for message height */
+            font-size: 14px;
+            color: #007aff;
+        }
+        
+        .instructions {
+            margin-top: 25px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Home Screen View (Full-screen App) */
+        #homescreen-view {
+            width: 100%;
+            height: 100%;
+            display: none; /* Hidden by default, shown by JS if in standalone mode */
+            background-color: #ffffff; /* Background for the iframe container, can be overridden by loaded page */
+        }
+
+        #app-frame {
+            width: 100%;
+            height: 100%;
+            border: none; /* Remove iframe border */
+            display: block; /* Ensure it takes up space */
+        }
+
+        #no-url-message {
+            display: none; /* Hidden by default */
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- This view is shown when opened in Safari browser -->
+    <div id="safari-view">
+        <h1>Set Up Your Web App</h1>
+        <p>Enter the website URL you want this app to display when launched from your Home Screen.</p>
+        <input type="url" id="url-input" placeholder="e.g., https://example.com or localhost:3000">
+        <button id="save-url-button">Save URL</button>
+        <p id="status-message"></p>
+        <p class="instructions">
+            After saving the URL, tap the <strong>Share</strong> button
+            ( <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTQgMTJoNWMxLjEgMCAyIC45IDIgMnY1Ii8+PHBhdGggZD0iTTEyIDIwdi04Ii8+PHBhdGggZD0iTTIwIDEydi01YzAtMS4xLS45LTItMi0ySDYiLz48L3N2Zz4=" alt="Share Icon" style="width:14px; height:14px; vertical-align: -2px; display: inline-block;"> )
+            in Safari's toolbar, then scroll down and select <strong>"Add to Home Screen"</strong>.
+        </p>
+    </div>
+
+    <!-- This view is shown when launched from the Home Screen -->
+    <div id="homescreen-view">
+        <iframe id="app-frame" title="Loaded Web App"></iframe>
+        <div id="no-url-message">
+            <h1>Welcome!</h1>
+            <p>To get started, please open this application in Safari first.</p>
+            <p>Then, enter the website URL you wish to display and use the "Add to Home Screen" feature again.</p>
+        </div>
+    </div>
+
+    <script>
+        // === JavaScript Logic ===
+        window.addEventListener('DOMContentLoaded', () => {
+            const safariView = document.getElementById('safari-view');
+            const homescreenView = document.getElementById('homescreen-view');
+            const appFrame = document.getElementById('app-frame');
+            const urlInput = document.getElementById('url-input');
+            const saveButton = document.getElementById('save-url-button');
+            const noUrlMessage = document.getElementById('no-url-message');
+            const statusMessage = document.getElementById('status-message');
+
+            const storedUrlKey = 'pwaTargetUrl_v1'; // Added _v1 for potential future changes
+
+            function sanitizeAndPrefixUrl(url) {
+                if (!url) return '';
+                url = url.trim();
+                
+                // If URL doesn't have a protocol
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    // Check if it's likely a localhost or IP address
+                    if (url.startsWith('localhost') || /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?/.test(url)) {
+                        return 'http://' + url; // Use http for local development
+                    }
+                    // Otherwise, default to https for other domains
+                    return 'https://' + url;
+                }
+                return url;
+            }
+
+            // Check if running in standalone mode (launched from Home Screen on iOS)
+            if (window.navigator.standalone === true) {
+                document.body.style.backgroundColor = '#ffffff'; // App background
+                safariView.style.display = 'none';
+                homescreenView.style.display = 'block';
+
+                const targetUrl = localStorage.getItem(storedUrlKey);
+                if (targetUrl) {
+                    appFrame.src = targetUrl;
+                    appFrame.style.display = 'block';
+                    noUrlMessage.style.display = 'none';
+                } else {
+                    // No URL is stored, show the placeholder message
+                    appFrame.style.display = 'none';
+                    noUrlMessage.style.display = 'block';
+                    // Use a slightly different background for the no-URL message page for clarity
+                    homescreenView.style.backgroundColor = '#f9f9f9';
+                }
+            } else { // Running in a browser (e.g., Safari)
+                document.body.style.backgroundColor = '#f0f0f0'; // Setup page background
+                safariView.style.display = 'flex';
+                homescreenView.style.display = 'none';
+
+                // Populate the input field with the currently stored URL, if any
+                const currentStoredUrl = localStorage.getItem(storedUrlKey);
+                if (currentStoredUrl) {
+                    urlInput.value = currentStoredUrl;
+                }
+
+                saveButton.addEventListener('click', () => {
+                    const rawUrl = urlInput.value;
+                    if (rawUrl) {
+                        const validatedUrl = sanitizeAndPrefixUrl(rawUrl);
+                        localStorage.setItem(storedUrlKey, validatedUrl);
+                        urlInput.value = validatedUrl; // Update input to show the sanitized URL
+                        statusMessage.textContent = 'URL saved successfully!';
+                        statusMessage.style.color = '#007aff'; // Blue for success
+                        setTimeout(() => { statusMessage.textContent = ''; }, 3000); // Clear message after 3s
+                    } else {
+                        statusMessage.textContent = 'Please enter a URL.';
+                        statusMessage.style.color = 'red'; // Red for error
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
